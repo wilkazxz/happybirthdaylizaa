@@ -2,7 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- ANTI ZOOM: maximum-scale + user-scalable=no -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Happy Birthday Liza Sayang! 💖🎂</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,6 +15,13 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
+        html, body {
+            /* Hanya boleh scroll vertikal, cubit-zoom & double-tap zoom diblokir */
+            touch-action: pan-y;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #fff0f5 0%, #ffe4e1 50%, #ffd1dc 100%);
@@ -100,6 +108,17 @@
         .photo-card:hover {
             transform: translateY(-8px) rotate(0deg) scale(1.03) !important;
             box-shadow: 0 20px 30px rgba(236, 72, 153, 0.25);
+        }
+
+        /* Flame wrapper (diskala sesuai kekuatan tiupan) */
+        #flameWrap {
+            transform-origin: 50% 100%;
+            transition: transform 0.12s linear, opacity 0.5s ease;
+        }
+
+        /* Meter tiupan */
+        #blowMeterBar {
+            transition: width 0.1s linear;
         }
 
         /* Custom Scrollbar */
@@ -215,25 +234,26 @@
             </div>
         </section>
 
-        <!-- INTERACTIVE CANDLE BLOWING SECTION -->
+        <!-- INTERACTIVE CANDLE BLOWING SECTION (MIC DETECTION) -->
         <section class="my-10">
             <div class="glass-card rounded-3xl p-6 md:p-8 text-center relative overflow-hidden">
                 <h3 class="text-2xl md:text-3xl font-bold text-pink-700 font-handwriting mb-2">
                     ✨ Tiup Lilin Ulang Tahun Liza! 🎂
                 </h3>
                 <p class="text-sm md:text-base text-gray-600 mb-6">
-                    Usap / gosok layar di bagian api lilin di bawah ini untuk tiup lilinnya! 🕯️✨
+                    Tekan tombol di bawah, izinkan mikrofon, lalu <b>tiup</b> ke arah HP-nya! 🕯️💨
                 </p>
 
-                <!-- Interactive Birthday Cake with Scratch/Swipe Candle Flame -->
                 <div class="relative w-full max-w-xs mx-auto flex flex-col items-center justify-center p-6 bg-pink-50/80 rounded-2xl border-2 border-pink-200">
                     
-                    <!-- Interactive Candle Container -->
-                    <div id="candleContainer" class="relative cursor-pointer select-none mb-2" onmousemove="scratchFlame(event)" ontouchmove="scratchFlame(event)" onclick="blowCandle()">
+                    <!-- Candle -->
+                    <div id="candleContainer" class="relative select-none mb-2" ontouchmove="scratchFlame(event)" onmousemove="scratchFlame(event)">
                         
-                        <!-- Flame / Fire -->
-                        <div id="flame" class="w-6 h-10 bg-gradient-to-t from-yellow-400 via-orange-400 to-red-500 rounded-full animate-bounce shadow-lg mx-auto relative transition-all duration-500">
-                            <div class="w-2 h-4 bg-white rounded-full mx-auto opacity-70 mt-2"></div>
+                        <!-- Flame / Fire (wrapper diskala oleh tiupan) -->
+                        <div id="flameWrap">
+                            <div id="flame" class="w-6 h-10 bg-gradient-to-t from-yellow-400 via-orange-400 to-red-500 rounded-full animate-bounce shadow-lg mx-auto relative">
+                                <div class="w-2 h-4 bg-white rounded-full mx-auto opacity-70 mt-2"></div>
+                            </div>
                         </div>
 
                         <!-- Smoke effect (hidden initially) -->
@@ -256,9 +276,21 @@
                         <span class="text-xs font-bold text-pink-700 font-handwriting">Make a wish, Liza! 💖</span>
                     </div>
 
+                    <!-- Tombol aktifkan mic -->
+                    <button id="micBtn" onclick="startMic()" class="mt-5 px-5 py-2.5 rounded-full bg-gradient-to-r from-pink-400 to-rose-500 text-white text-sm font-bold shadow-lg active:scale-95 transition">
+                        🎤 Aktifkan Mic & Tiup!
+                    </button>
+
+                    <!-- Meter kekuatan tiupan -->
+                    <div id="blowMeter" class="hidden w-full mt-3">
+                        <div class="h-2.5 w-full bg-pink-100 rounded-full overflow-hidden border border-pink-200">
+                            <div id="blowMeterBar" class="h-full w-0 bg-gradient-to-r from-pink-400 to-rose-500"></div>
+                        </div>
+                    </div>
+
                     <!-- Status Message -->
                     <div id="candleStatus" class="mt-4 text-sm font-semibold text-pink-600 bg-white/80 px-4 py-1.5 rounded-full border border-pink-300 shadow-sm">
-                        👋 Geser/gosok jari atau mousemu di atas api lilin!
+                        🎤 Tekan tombol di atas lalu tiup HP-nya!
                     </div>
                 </div>
             </div>
@@ -326,7 +358,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-                <!-- Photo 1 (Foto Pilihan Nandez 1) -->
+                <!-- Photo 1 -->
                 <div class="photo-card bg-white p-3 rounded-3xl shadow-md border-2 border-pink-200 transform -rotate-2 relative">
                     <div class="absolute -top-3 -right-3 text-3xl z-10">🌸</div>
                     <div class="overflow-hidden rounded-2xl h-72 relative bg-pink-100">
@@ -334,7 +366,7 @@
                     </div>
                 </div>
 
-                <!-- Photo 2 (Foto Pilihan Nandez 2) -->
+                <!-- Photo 2 -->
                 <div class="photo-card bg-white p-3 rounded-3xl shadow-md border-2 border-pink-200 transform rotate-2 relative md:mt-4">
                     <div class="absolute -top-3 -left-3 text-3xl z-10">💐</div>
                     <div class="overflow-hidden rounded-2xl h-72 relative bg-pink-100">
@@ -342,7 +374,7 @@
                     </div>
                 </div>
 
-                <!-- Photo 3 (Foto Pilihan Nandez 3) -->
+                <!-- Photo 3 -->
                 <div class="photo-card bg-white p-3 rounded-3xl shadow-md border-2 border-pink-200 transform -rotate-1 relative">
                     <div class="absolute -bottom-3 -right-3 text-3xl z-10">🌷</div>
                     <div class="overflow-hidden rounded-2xl h-72 relative bg-pink-100">
@@ -364,12 +396,37 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        // 1. INTRO ANIMATION TIMEOUT (2 Seconds)
+        // ===== ANTI ZOOM (iOS Safari mengabaikan user-scalable=no, jadi dikunci lewat JS) =====
+        ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev =>
+            document.addEventListener(ev, e => e.preventDefault(), { passive: false })
+        );
+        // Blok cubit 2 jari
+        document.addEventListener('touchmove', e => {
+            if (e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
+        document.addEventListener('touchstart', e => {
+            if (e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
+        // Blok double-tap zoom
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', e => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) e.preventDefault();
+            lastTouchEnd = now;
+        }, { passive: false });
+        // Blok zoom desktop: Ctrl + scroll, Ctrl + (+/-/0)
+        document.addEventListener('wheel', e => {
+            if (e.ctrlKey) e.preventDefault();
+        }, { passive: false });
+        document.addEventListener('keydown', e => {
+            if ((e.ctrlKey || e.metaKey) && ['+', '-', '=', '0', '_'].includes(e.key)) e.preventDefault();
+        });
+
+        // ===== 1. INTRO ANIMATION =====
         window.addEventListener('DOMContentLoaded', () => {
             const intro = document.getElementById('introOverlay');
             const main = document.getElementById('mainContent');
 
-            // Play ambient falling flowers right away
             createFallingFlowers();
 
             setTimeout(() => {
@@ -377,45 +434,166 @@
                 setTimeout(() => {
                     intro.style.display = 'none';
                     main.classList.remove('opacity-0');
-                    // Launch initial confetti celebrate
                     triggerConfetti();
-                }, 1000); // fade duration
-            }, 2000); // 2 Seconds intro delay
+                }, 1000);
+            }, 2000);
         });
 
-        // Interactive Candle Blowing (Scratch / Swipe logic)
-        let rubCount = 0;
+        // ===== 2. TIUP LILIN DENGAN MIKROFON =====
         let isCandleBlown = false;
+        let fallbackMode = false;   // aktif kalau mic ditolak / tidak tersedia
+        let rubCount = 0;
+        let audioCtx = null, analyser = null, micStream = null, rafId = null;
 
-        function scratchFlame(e) {
+        const BLOW_HOLD_MS = 350;   // lama tiupan yang dibutuhkan
+        let blowStart = 0;
+        let baseline = 0.02;        // kebisingan ruangan
+        let calibrating = true;
+        let calibSamples = [];
+
+        function setStatus(text) {
+            document.getElementById('candleStatus').innerHTML = text;
+        }
+
+        async function startMic() {
             if (isCandleBlown) return;
-            rubCount++;
-            if (rubCount > 10) {
-                blowCandle();
+            const btn = document.getElementById('micBtn');
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                enableFallback('⚠️ Mic tidak didukung / buka lewat HTTPS. Gosok api lilinnya ya!');
+                return;
             }
+
+            try {
+                micStream = await navigator.mediaDevices.getUserMedia({
+                    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+                });
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+                const source = audioCtx.createMediaStreamSource(micStream);
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 1024;
+                source.connect(analyser);
+
+                btn.classList.add('hidden');
+                document.getElementById('blowMeter').classList.remove('hidden');
+                setStatus('🤫 Tunggu sebentar, mengukur suara sekitar...');
+                calibrating = true;
+                calibSamples = [];
+                setTimeout(() => {
+                    calibrating = false;
+                    if (calibSamples.length) {
+                        baseline = calibSamples.reduce((a, b) => a + b, 0) / calibSamples.length;
+                    }
+                    setStatus('💨 Sekarang tiup lilinnya! Dekatkan mulut ke mic HP');
+                }, 900);
+
+                listenBlow();
+            } catch (err) {
+                console.warn('Mic error:', err);
+                enableFallback('🙈 Mic tidak diizinkan. Gosok / ketuk api lilinnya aja ya!');
+            }
+        }
+
+        function listenBlow() {
+            const data = new Uint8Array(analyser.fftSize);
+            const freq = new Uint8Array(analyser.frequencyBinCount);
+            const wrap = document.getElementById('flameWrap');
+            const bar = document.getElementById('blowMeterBar');
+
+            function loop() {
+                if (isCandleBlown) return;
+                analyser.getByteTimeDomainData(data);
+                analyser.getByteFrequencyData(freq);
+
+                // Volume (RMS)
+                let sum = 0;
+                for (let i = 0; i < data.length; i++) {
+                    const v = (data[i] - 128) / 128;
+                    sum += v * v;
+                }
+                const rms = Math.sqrt(sum / data.length);
+
+                // Energi frekuensi rendah (tiupan = desis angin, dominan < ~1.5kHz)
+                const lowBins = Math.floor(freq.length * 0.12);
+                let low = 0;
+                for (let i = 1; i < lowBins; i++) low += freq[i];
+                low = low / lowBins / 255;
+
+                if (calibrating) {
+                    calibSamples.push(rms);
+                } else {
+                    // Level tiupan relatif terhadap suara ruangan
+                    const threshold = Math.max(0.08, baseline * 3.5);
+                    const level = Math.min(1.5, rms / threshold);
+                    const isBlowing = rms > threshold && low > 0.25;
+
+                    // Api bergoyang & mengecil saat ditiup
+                    const s = isBlowing ? Math.max(0.35, 1 - level * 0.45) : 1;
+                    wrap.style.transform = `scale(${s}) skewX(${isBlowing ? (Math.random() * 16 - 8) : 0}deg)`;
+                    bar.style.width = Math.min(100, level * 70) + '%';
+
+                    if (isBlowing) {
+                        if (!blowStart) blowStart = performance.now();
+                        if (performance.now() - blowStart >= BLOW_HOLD_MS) {
+                            blowCandle();
+                            return;
+                        }
+                    } else {
+                        blowStart = 0;
+                    }
+                }
+                rafId = requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        function enableFallback(msg) {
+            fallbackMode = true;
+            document.getElementById('micBtn').classList.add('hidden');
+            document.getElementById('candleContainer').classList.add('cursor-pointer');
+            document.getElementById('candleContainer').onclick = blowCandle;
+            setStatus(msg);
+        }
+
+        // Cadangan: gosok api kalau mic tidak bisa dipakai
+        function scratchFlame() {
+            if (isCandleBlown || !fallbackMode) return;
+            rubCount++;
+            if (rubCount > 10) blowCandle();
+        }
+
+        function stopMic() {
+            if (rafId) cancelAnimationFrame(rafId);
+            if (micStream) micStream.getTracks().forEach(t => t.stop());
+            if (audioCtx) audioCtx.close();
         }
 
         function blowCandle() {
             if (isCandleBlown) return;
             isCandleBlown = true;
-            
-            const flame = document.getElementById('flame');
+            stopMic();
+
+            const wrap = document.getElementById('flameWrap');
             const smoke = document.getElementById('smoke');
             const status = document.getElementById('candleStatus');
 
-            // Hide Flame & Show Smoke
-            flame.style.opacity = '0';
-            flame.style.transform = 'scale(0)';
+            // Api padam otomatis
+            wrap.style.opacity = '0';
+            wrap.style.transform = 'scale(0)';
             smoke.classList.remove('hidden');
+            document.getElementById('blowMeter').classList.add('hidden');
+
+            if (navigator.vibrate) navigator.vibrate(150);
 
             status.innerHTML = '✨ Yeay! Selamat Ulang Tahun Liza! 🎉💖';
             status.className = 'mt-4 text-sm font-bold text-rose-600 bg-pink-100 px-4 py-1.5 rounded-full border border-pink-400 shadow-md animate-bounce';
 
-            // Trigger Confetti Celebration
             triggerConfetti();
         }
 
-        // 2. FALLING FLOWERS & PETALS GENERATOR
+        // ===== 3. FALLING FLOWERS =====
         function createFallingFlowers() {
             const container = document.getElementById('petalContainer');
             const flowerIcons = ['🌸', '🌺', '🌹', '🌷', '✨', '💖', '🌼'];
@@ -425,24 +603,20 @@
                 const petal = document.createElement('div');
                 petal.className = 'falling-petal';
                 petal.innerText = flowerIcons[Math.floor(Math.random() * flowerIcons.length)];
-                
-                // Random position & animation timing
                 petal.style.left = Math.random() * 100 + 'vw';
                 petal.style.fontSize = (Math.random() * 20 + 15) + 'px';
                 petal.style.animationDuration = (Math.random() * 5 + 6) + 's';
                 petal.style.animationDelay = (Math.random() * 5) + 's';
-
                 container.appendChild(petal);
             }
         }
 
-        // 3. CONFETTI & PARTY EFFECT ON BUTTON CLICK
+        // ===== 4. CONFETTI =====
         function triggerParty() {
             triggerConfetti();
         }
 
         function triggerConfetti() {
-            // Check if confetti function is defined before executing to prevent ReferenceError
             if (typeof confetti === 'function') {
                 confetti({
                     particleCount: 90,
@@ -450,8 +624,6 @@
                     origin: { y: 0.6 },
                     colors: ['#ff69b4', '#ff1493', '#ffb6c1', '#ffffff', '#ff007f']
                 });
-            } else {
-                console.warn('Confetti library is still loading...');
             }
         }
     </script>
