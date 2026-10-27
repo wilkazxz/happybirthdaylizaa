@@ -39,8 +39,8 @@
 
         /* Custom Animations */
         @keyframes floatSlow {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(5deg); }
+            0%, 100% { transform: translate3d(0,0,0) rotate(0deg); }
+            50% { transform: translate3d(0,-15px,0) rotate(5deg); }
         }
 
         @keyframes pulseHeart {
@@ -50,22 +50,17 @@
         }
 
         @keyframes flowerFall {
-            0% {
-                transform: translateY(-10vh) rotate(0deg) translateX(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(105vh) rotate(360deg) translateX(100px);
-                opacity: 0.2;
-            }
+            0% { transform: translate3d(0,-10vh,0) rotate(0deg); }
+            100% { transform: translate3d(100px,105vh,0) rotate(360deg); }
         }
 
         @keyframes soundWave {
-            0%, 100% { height: 6px; }
-            50% { height: 18px; }
+            0%, 100% { transform: scaleY(0.33); }
+            50% { transform: scaleY(1); }
         }
 
         .animate-float {
+            will-change: transform;
             animation: floatSlow 4s ease-in-out infinite;
         }
 
@@ -75,6 +70,9 @@
 
         .wave-bar {
             width: 3px;
+            height: 18px;
+            transform-origin: bottom;
+            will-change: transform;
             background-color: #ec4899;
             border-radius: 9999px;
             animation: soundWave 1.2s ease-in-out infinite;
@@ -90,25 +88,39 @@
             animation-name: flowerFall;
             animation-timing-function: linear;
             animation-iteration-count: infinite;
+            will-change: transform;
+            backface-visibility: hidden;
         }
+        #petalContainer { position: fixed; inset: 0; pointer-events: none; z-index: 50; contain: strict; }
 
         /* Glassmorphism Effect */
         .glass-card {
-            background: rgba(255, 255, 255, 0.88);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.95);
             border: 2px solid rgba(255, 182, 193, 0.6);
             box-shadow: 0 15px 35px rgba(255, 105, 180, 0.15);
         }
 
         /* Photo Frame Style */
         .photo-card {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.3s ease-out;
+            will-change: transform;
         }
-        .photo-card:hover {
-            transform: translateY(-8px) rotate(0deg) scale(1.03) !important;
-            box-shadow: 0 20px 30px rgba(236, 72, 153, 0.25);
+        @media (hover: hover) {
+            .photo-card:hover { transform: translate3d(0,-8px,0) scale(1.03) !important; }
         }
+        /* Efek muncul dari samping saat di-scroll (seperti slide PPT) */
+        .reveal { opacity: 0; will-change: transform, opacity;
+            transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.9s ease-out; }
+        .reveal-left  { transform: translate3d(-110%, 0, 0) rotate(-6deg); }
+        .reveal-right { transform: translate3d(110%, 0, 0) rotate(6deg); }
+        .reveal.show { opacity: 1; transform: translate3d(0, 0, 0) rotate(0deg); }
+        .reveal-delay { transition-delay: 0.25s; }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { transition: none; opacity: 1; transform: none; }
+        }
+        /* Section di bawah layar baru dirender saat mendekat */
+        .lazy-section { content-visibility: auto; contain-intrinsic-size: 1px 600px; }
+        body { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
 
         /* Flame wrapper (diskala sesuai kekuatan tiupan) */
         #flameWrap {
@@ -118,7 +130,7 @@
 
         /* Meter tiupan */
         #blowMeterBar {
-            transition: width 0.1s linear;
+            width: 100%; transform-origin: left; transform: scaleX(0); will-change: transform;
         }
 
         /* Custom Scrollbar */
@@ -139,7 +151,7 @@
     <!-- FLOATING MUSIC CONTROL BAR -->
     <div class="fixed top-4 right-4 z-50 flex items-center gap-2">
         <!-- Visual Playing Indicator Badge -->
-        <div id="musicIndicator" class="bg-white/90 backdrop-blur-md border border-pink-300 text-pink-700 px-3 py-1.5 rounded-full shadow-lg text-xs md:text-sm font-semibold flex items-center gap-2 animate-fade-in">
+        <div id="musicIndicator" class="bg-white/95 border border-pink-300 text-pink-700 px-3 py-1.5 rounded-full shadow-lg text-xs md:text-sm font-semibold flex items-center gap-2 animate-fade-in">
             <div class="flex items-end gap-0.5 h-4">
                 <div class="wave-bar" style="animation-delay: 0s;"></div>
                 <div class="wave-bar" style="animation-delay: 0.2s;"></div>
@@ -284,7 +296,7 @@
                     <!-- Meter kekuatan tiupan -->
                     <div id="blowMeter" class="hidden w-full mt-3">
                         <div class="h-2.5 w-full bg-pink-100 rounded-full overflow-hidden border border-pink-200">
-                            <div id="blowMeterBar" class="h-full w-0 bg-gradient-to-r from-pink-400 to-rose-500"></div>
+                            <div id="blowMeterBar" class="h-full bg-gradient-to-r from-pink-400 to-rose-500"></div>
                         </div>
                     </div>
 
@@ -297,7 +309,7 @@
         </section>
 
         <!-- 3. SURAT CINTA / LOVE LETTER SECTION -->
-        <section class="my-12">
+        <section class="my-12 lazy-section">
             <div class="glass-card rounded-3xl p-6 md:p-10 relative overflow-hidden">
                 <!-- Floral Background Decors -->
                 <div class="absolute top-0 right-0 transform translate-x-4 -translate-y-4 text-7xl opacity-15 pointer-events-none">🌸</div>
@@ -336,7 +348,7 @@
         </section>
 
         <!-- 4. FRESH FLOWER BOUQUET BANNER -->
-        <section class="my-10">
+        <section class="my-10 lazy-section">
             <div class="bg-gradient-to-r from-pink-300 via-rose-300 to-pink-200 rounded-3xl p-6 text-center shadow-lg relative overflow-hidden border-2 border-white">
                 <div class="relative z-10 flex flex-col md:flex-row items-center justify-around gap-4">
                     <div class="text-5xl md:text-6xl">💐🌹🌷</div>
@@ -350,7 +362,7 @@
         </section>
 
         <!-- 5. GALLERY FOTO LUCU (3 FOTO WITH FLORAL DESIGN & PURE PHOTO) -->
-        <section class="my-12">
+        <section class="my-12 lazy-section">
             <div class="text-center mb-8">
                 <h2 class="text-3xl md:text-4xl font-extrabold text-pink-700 font-handwriting inline-block relative">
                     <span class="mr-2">🌸</span> Galeri lucuu lizaa <span class="ml-2">💐</span>
@@ -362,7 +374,7 @@
                 <div class="photo-card bg-white p-3 rounded-3xl shadow-md border-2 border-pink-200 transform -rotate-2 relative">
                     <div class="absolute -top-3 -right-3 text-3xl z-10">🌸</div>
                     <div class="overflow-hidden rounded-2xl h-72 relative bg-pink-100">
-                        <img src="https://i.ibb.co.com/HDHY4Pjb/foto1.jpg" alt="Foto Liza 1" class="w-full h-full object-cover">
+                        <img src="https://i.ibb.co.com/HDHY4Pjb/foto1.jpg" alt="Foto Liza 1" class="w-full h-full object-cover" loading="lazy" decoding="async">
                     </div>
                 </div>
 
@@ -370,7 +382,7 @@
                 <div class="photo-card bg-white p-3 rounded-3xl shadow-md border-2 border-pink-200 transform rotate-2 relative md:mt-4">
                     <div class="absolute -top-3 -left-3 text-3xl z-10">💐</div>
                     <div class="overflow-hidden rounded-2xl h-72 relative bg-pink-100">
-                        <img src="https://i.ibb.co.com/mVKDTf4L/foto2.jpg" alt="Foto Liza 2" class="w-full h-full object-cover">
+                        <img src="https://i.ibb.co.com/mVKDTf4L/foto2.jpg" alt="Foto Liza 2" class="w-full h-full object-cover" loading="lazy" decoding="async">
                     </div>
                 </div>
 
@@ -378,9 +390,24 @@
                 <div class="photo-card bg-white p-3 rounded-3xl shadow-md border-2 border-pink-200 transform -rotate-1 relative">
                     <div class="absolute -bottom-3 -right-3 text-3xl z-10">🌷</div>
                     <div class="overflow-hidden rounded-2xl h-72 relative bg-pink-100">
-                        <img src="https://i.ibb.co.com/8DY5b9F0/foto5.jpg" alt="Foto Liza 3" class="w-full h-full object-cover">
+                        <img src="https://i.ibb.co.com/8DY5b9F0/foto5.jpg" alt="Foto Liza 3" class="w-full h-full object-cover" loading="lazy" decoding="async">
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- 6. FOTO SPESIAL (muncul dari samping saat scroll) -->
+        <section class="my-16 overflow-hidden">
+            <div class="max-w-sm mx-auto">
+                <div class="reveal reveal-left photo-card bg-white p-3 rounded-3xl shadow-md border-2 border-pink-200 relative">
+                    <div class="absolute -top-4 -right-3 text-4xl z-10">🌹</div>
+                    <div class="overflow-hidden rounded-2xl bg-pink-100">
+                        <img src="fotoku.png" alt="Foto Nandez" class="w-full h-auto object-cover" loading="lazy" decoding="async">
+                    </div>
+                </div>
+                <p class="reveal reveal-right reveal-delay text-center text-2xl md:text-3xl font-handwriting text-pink-700 mt-5">
+                    Dari aku untuk kamu, Liza 💖
+                </p>
             </div>
         </section>
 
@@ -532,7 +559,7 @@
                     // Api bergoyang & mengecil saat ditiup
                     const s = isBlowing ? Math.max(0.35, 1 - level * 0.45) : 1;
                     wrap.style.transform = `scale(${s}) skewX(${isBlowing ? (Math.random() * 16 - 8) : 0}deg)`;
-                    bar.style.width = Math.min(100, level * 70) + '%';
+                    bar.style.transform = 'scaleX(' + Math.min(1, level * 0.7).toFixed(2) + ')';
 
                     if (isBlowing) {
                         if (!blowStart) blowStart = performance.now();
@@ -593,11 +620,37 @@
             triggerConfetti();
         }
 
+        // ===== Scroll reveal: elemen muncul dari samping saat masuk layar =====
+        (function () {
+            const items = document.querySelectorAll('.reveal');
+            if (!('IntersectionObserver' in window)) {
+                items.forEach(el => el.classList.add('show'));
+                return;
+            }
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach(en => {
+                    if (en.isIntersecting) {
+                        en.target.classList.add('show');
+                        io.unobserve(en.target);
+                    }
+                });
+            }, { threshold: 0.2 });
+            items.forEach(el => io.observe(el));
+        })();
+
+        // Hemat baterai & CPU: jeda animasi saat tab tidak terlihat
+        document.addEventListener('visibilitychange', () => {
+            const c = document.getElementById('petalContainer');
+            if (c) c.style.visibility = document.hidden ? 'hidden' : 'visible';
+            document.body.style.setProperty('--ap', document.hidden ? 'paused' : 'running');
+        });
+
         // ===== 3. FALLING FLOWERS =====
         function createFallingFlowers() {
             const container = document.getElementById('petalContainer');
             const flowerIcons = ['🌸', '🌺', '🌹', '🌷', '✨', '💖', '🌼'];
-            const petalCount = 25;
+            const weak = (navigator.hardwareConcurrency || 4) <= 4 || window.innerWidth < 768;
+            const petalCount = weak ? 10 : 20;
 
             for (let i = 0; i < petalCount; i++) {
                 const petal = document.createElement('div');
@@ -619,7 +672,9 @@
         function triggerConfetti() {
             if (typeof confetti === 'function') {
                 confetti({
-                    particleCount: 90,
+                    particleCount: window.innerWidth < 768 ? 60 : 90,
+                    ticks: 150,
+                    disableForReducedMotion: true,
                     spread: 80,
                     origin: { y: 0.6 },
                     colors: ['#ff69b4', '#ff1493', '#ffb6c1', '#ffffff', '#ff007f']
